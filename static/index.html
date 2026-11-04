@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>CourseQA - 智能课程知识检索系统</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 30px auto; padding: 0 20px; background: #f8fafc; color: #1e293b; }
+    .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; }
+    .controls { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    input[type="text"] { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; }
+    select, button { padding: 10px 16px; border-radius: 6px; border: 1px solid #cbd5e1; cursor: pointer; }
+    button.primary { background: #2563eb; color: white; border: none; }
+    .badge { display: inline-block; padding: 2px 8px; font-size: 12px; border-radius: 4px; background: #e2e8f0; margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <h2>CourseQA 多引擎课程知识检索系统</h2>
+    <div>
+      <button onclick="reloadCorpus()">热重载知识库</button>
+      <a href="/dashboard" style="margin-left:12px;">数据统计与历史看板</a>
+    </div>
+  </div>
+  <div class="card">
+    <div class="controls">
+      <input id="queryInput" type="text" placeholder="输入课程问题，例如：Dijkstra最短路径算法的时间复杂度是多少？" />
+      <select id="engineSelect">
+        <option value="tfidf">TF-IDF + 余弦相似度</option>
+        <option value="bm25">BM25 概率检索模型</option>
+        <option value="count">CountVectorizer 词频向量</option>
+      </select>
+      <select id="topKSelect">
+        <option value="3">Top 3</option>
+        <option value="5" selected>Top 5</option>
+        <option value="10">Top 10</option>
+      </select>
+      <button class="primary" onclick="runSearch()">立即检索</button>
+    </div>
+  </div>
+  <div id="metaInfo" style="margin-bottom: 12px; font-size: 14px; color: #64748b;"></div>
+  <div id="resultContainer"></div>
+
+  <script>
+    async function runSearch() {
+      const query = document.getElementById('queryInput').value.trim();
+      const engine = document.getElementById('engineSelect').value;
+      const top_k = parseInt(document.getElementById('topKSelect').value);
+      if (!query) return;
+      const res = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, engine, top_k })
+      });
+      const data = await res.json();
+      document.getElementById('metaInfo').innerText =
+        `检索耗时: ${data.elapsed_ms} ms | 知识库总分块: ${data.total_chunks} | 命中结果: ${data.results.length}`;
+      const container = document.getElementById('resultContainer');
+      container.innerHTML = data.results.map(item => `
+        <div class="card">
+          <div>
+            <span class="badge">Rank #${item.rank}</span>
+            <span class="badge">Score: ${item.score}</span>
+            <span class="badge">来源: ${item.source} - ${item.section}</span>
+          </div>
+          <p style="margin-top:10px; line-height:1.6;">${item.content}</p>
+        </div>
+      `).join('') || '<div class="card">未检索到相关课程知识片段。</div>';
+    }
+
+    async function reloadCorpus() {
+      const res = await fetch('/api/reload', { method: 'POST' });
+      const data = await res.json();
+      alert(`${data.message}：共加载 ${data.files} 个文档，${data.chunks} 个知识块`);
+    }
+  </script>
+</body>
+</html>
