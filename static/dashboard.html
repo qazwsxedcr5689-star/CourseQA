@@ -2,60 +2,347 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>CourseQA - 检索统计与历史看板</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CourseQA — 检索统计与历史分析看板</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 30px auto; padding: 0 20px; background: #f8fafc; color: #1e293b; }
-    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-    .card { background: #fff; padding: 16px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 14px; }
-    button { padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; cursor: pointer; }
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --primary: #4f46e5;
+      --primary-soft: #eef2ff;
+      --accent: #0ea5e9;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #ef4444;
+      --radius: 14px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+    [data-theme="dark"] {
+      --bg: #0b1120;
+      --surface: #1e293b;
+      --surface-alt: #0f172a;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-soft: rgba(99, 102, 241, 0.16);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .hero-header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 45%, #0f172a 100%);
+      color: #fff;
+      padding: 24px;
+    }
+    .container { max-width: 1240px; margin: 0 auto; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }
+    .btn-ghost {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.2); }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+      margin: 22px 0;
+    }
+    @media (max-width: 1024px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 600px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+    .kpi-label { font-size: 12.5px; color: var(--text-muted); font-weight: 600; }
+    .kpi-val { font-size: 26px; font-weight: 800; color: var(--primary); margin-top: 6px; }
+    .kpi-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 860px) { .charts-grid { grid-template-columns: 1fr; } }
+
+    .bar-row {
+      margin-bottom: 12px;
+    }
+    .bar-row-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .bar-track {
+      height: 10px;
+      background: var(--surface-alt);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 999px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    input, select, button {
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      font-size: 13.5px;
+    }
+    button { cursor: pointer; font-weight: 600; }
+    button:hover { border-color: var(--primary); color: var(--primary); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 13.5px;
+    }
+    th { color: var(--text-muted); font-weight: 600; background: var(--surface-alt); }
+    .engine-tag {
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--primary-soft);
+      color: var(--primary);
+      text-transform: uppercase;
+    }
   </style>
 </head>
 <body>
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-    <h2>CourseQA 检索统计与历史管理看板</h2>
-    <div>
-      <button onclick="window.location.href='/api/history/export'">导出 CSV</button>
-      <button onclick="clearHistory()">清空历史</button>
-      <a href="/" style="margin-left:12px;">返回检索页</a>
+  <header class="hero-header">
+    <div class="container topbar">
+      <div>
+        <h1 style="font-size:21px;">📊 CourseQA 检索指标监控与历史审计看板</h1>
+        <p style="font-size:13px; color:#cbd5e1; margin-top:2px;">实时追踪多引擎调用分布、响应延迟、零命中率与历史查询日志导出</p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn-ghost" onclick="window.location.href='/api/history/export'">📥 导出 UTF-8 CSV 报表</button>
+        <button class="btn-ghost" onclick="clearHistory()">🗑️ 清空历史</button>
+        <a class="btn-ghost" href="/">🔍 返回智能问答主页</a>
+      </div>
     </div>
-  </div>
-  <div class="grid" id="statsGrid"></div>
-  <table>
-    <thead>
-      <tr><th>ID</th><th>时间</th><th>查询词</th><th>引擎</th><th>最高分</th><th>耗时(ms)</th><th>操作</th></tr>
-    </thead>
-    <tbody id="historyBody"></tbody>
-  </table>
+  </header>
+
+  <main class="container" style="padding: 0 20px 48px;">
+    <div class="kpi-grid" id="statsGrid"></div>
+
+    <div class="charts-grid">
+      <div class="card">
+        <h3 style="font-size:15.5px; margin-bottom:14px;">⚙️ 检索引擎调用分布</h3>
+        <div id="engineDistBox"></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:15.5px; margin-bottom:14px;">🔥 高频课程查询 Top 榜单</h3>
+        <div id="topQueriesBox"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <h3 style="font-size:16px;">📜 历史检索审计日志</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <input id="kwFilter" type="text" placeholder="按查询词筛选..." oninput="loadHistoryTable()" />
+          <select id="engFilter" onchange="loadHistoryTable()">
+            <option value="">全部检索引擎</option>
+            <option value="hybrid">Hybrid (RRF)</option>
+            <option value="bm25">BM25</option>
+            <option value="tfidf">TF-IDF</option>
+            <option value="count">CountVectorizer</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>记录 ID</th>
+              <th>检索时间</th>
+              <th>查询问题</th>
+              <th>检索引擎</th>
+              <th>命中数</th>
+              <th>最高得分</th>
+              <th>首选来源</th>
+              <th>响应耗时</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
   <script>
+    if (localStorage.getItem('courseqa_theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str || '';
+      return d.innerHTML;
+    }
+
     async function loadDashboard() {
       const sRes = await fetch('/api/stats');
       const stats = await sRes.json();
+      const corpus = stats.corpus || {};
+
       document.getElementById('statsGrid').innerHTML = `
-        <div class="card"><h4>总查询次数</h4><h2>${stats.total_queries}</h2></div>
-        <div class="card"><h4>平均响应耗时</h4><h2>${stats.avg_elapsed_ms} ms</h2></div>
-        <div class="card"><h4>平均Top1得分</h4><h2>${stats.avg_top_score}</h2></div>
-        <div class="card"><h4>零命中率</h4><h2>${(stats.zero_hit_rate * 100).toFixed(1)}%</h2></div>
+        <div class="card">
+          <div class="kpi-label">总查询次数</div>
+          <div class="kpi-val">${stats.total_queries}</div>
+          <div class="kpi-sub">累计检索请求</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">平均响应耗时</div>
+          <div class="kpi-val">${stats.avg_elapsed_ms} <span style="font-size:14px;">ms</span></div>
+          <div class="kpi-sub">毫秒级实时检索</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">平均 Top-1 得分</div>
+          <div class="kpi-val">${stats.avg_top_score}</div>
+          <div class="kpi-sub">首位相关性均值</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">零命中率</div>
+          <div class="kpi-val" style="color:${stats.zero_hit_rate > 0.2 ? 'var(--rose)' : 'var(--emerald)'};">
+            ${(stats.zero_hit_rate * 100).toFixed(1)}%
+          </div>
+          <div class="kpi-sub">知识盲区监控</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">知识库语义分块</div>
+          <div class="kpi-val">${corpus.total_chunks || 0}</div>
+          <div class="kpi-sub">共 ${corpus.total_files || 0} 篇 Markdown 讲义</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">倒排词表规模</div>
+          <div class="kpi-val">${corpus.vocab_size || 0}</div>
+          <div class="kpi-sub">平均块长 ${corpus.avg_chunk_length || 0} 字</div>
+        </div>
       `;
-      const hRes = await fetch('/api/history');
-      const hist = await hRes.json();
-      document.getElementById('historyBody').innerHTML = hist.items.map(r => `
-        <tr>
-          <td>${r.id}</td><td>${r.timestamp}</td><td>${r.query}</td>
-          <td>${r.engine}</td><td>${r.top_score}</td><td>${r.elapsed_ms}</td>
-          <td><button onclick="delRecord('${r.id}')">删除</button></td>
-        </tr>
-      `).join('');
+
+      // Engine distribution bars
+      const dist = stats.engine_distribution || {};
+      const total = Math.max(stats.total_queries, 1);
+      const engines = [
+        { key: 'hybrid', label: 'Hybrid (RRF 混合检索)' },
+        { key: 'bm25', label: 'BM25 概率检索模型' },
+        { key: 'tfidf', label: 'TF-IDF 向量空间模型' },
+        { key: 'count', label: 'CountVectorizer 词频模型' }
+      ];
+      document.getElementById('engineDistBox').innerHTML = engines.map(e => {
+        const cnt = dist[e.key] || 0;
+        const pct = Math.round((cnt / total) * 100);
+        return `
+          <div class="bar-row">
+            <div class="bar-row-top">
+              <span>${e.label}</span>
+              <span>${cnt} 次 (${pct}%)</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+          </div>
+        `;
+      }).join('');
+
+      // Top queries
+      const topQ = stats.top_queries || [];
+      document.getElementById('topQueriesBox').innerHTML = topQ.length ? topQ.map((item, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:13.5px;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span class="engine-tag">#${idx + 1}</span>
+            <span>${escapeHtml(item.query)}</span>
+          </div>
+          <strong>${item.count} 次</strong>
+        </div>
+      `).join('') : '<p style="color:var(--text-muted); font-size:13.5px;">暂无查询记录</p>';
+
+      await loadHistoryTable();
     }
+
+    async function loadHistoryTable() {
+      const kw = document.getElementById('kwFilter').value.trim();
+      const eng = document.getElementById('engFilter').value;
+      const params = new URLSearchParams();
+      if (kw) params.set('keyword', kw);
+      if (eng) params.set('engine', eng);
+
+      const hRes = await fetch('/api/history?' + params.toString());
+      const hist = await hRes.json();
+      const tbody = document.getElementById('historyBody');
+      tbody.innerHTML = hist.items.map(r => `
+        <tr>
+          <td><code>${escapeHtml(r.id)}</code></td>
+          <td style="color:var(--text-muted);">${escapeHtml(r.timestamp)}</td>
+          <td style="font-weight:600;">${escapeHtml(r.query)}</td>
+          <td><span class="engine-tag">${escapeHtml(r.engine)}</span></td>
+          <td>${r.hit_count ?? '-'}</td>
+          <td style="font-weight:600; color:var(--primary);">${r.top_score}</td>
+          <td><code>${escapeHtml(r.top_source || 'N/A')}</code></td>
+          <td>${r.elapsed_ms} ms</td>
+          <td style="display:flex; gap:6px;">
+            <button onclick="window.location.href='/?q=${encodeURIComponent(r.query)}&engine=${encodeURIComponent(r.engine)}'">重放</button>
+            <button onclick="delRecord('${escapeHtml(r.id)}')">删除</button>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding:24px;">暂无匹配的检索历史记录</td></tr>';
+    }
+
     async function delRecord(id) {
       await fetch('/api/history/' + id, { method: 'DELETE' });
       loadDashboard();
     }
+
     async function clearHistory() {
       await fetch('/api/history', { method: 'DELETE' });
       loadDashboard();
     }
+
     loadDashboard();
   </script>
 </body>

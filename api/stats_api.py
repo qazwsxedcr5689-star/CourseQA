@@ -7,8 +7,21 @@ router = APIRouter(prefix="/api/stats", tags=["Statistics"])
 
 @router.get("")
 def get_system_stats():
+    from app import qa_engine
     records = load_history()
     total_queries = len(records)
+    corpus_docs = qa_engine.get_corpus_documents()
+
+    corpus_summary = {
+        "total_files": len(corpus_docs),
+        "total_chunks": len(qa_engine.chunks),
+        "vocab_size": len(qa_engine.doc_freqs),
+        "avg_chunk_length": round(
+            sum(c.get("char_count", len(c["content"])) for c in qa_engine.chunks) / max(len(qa_engine.chunks), 1), 1
+        ),
+        "last_reload_time": qa_engine.last_reload_time
+    }
+
     if total_queries == 0:
         return {
             "total_queries": 0,
@@ -16,14 +29,26 @@ def get_system_stats():
             "avg_top_score": 0.0,
             "zero_hit_rate": 0.0,
             "engine_distribution": {},
-            "top_queries": []
+            "top_queries": [],
+            "recent_latencies": [],
+            "corpus": corpus_summary
         }
 
     avg_elapsed = round(sum(r.get("elapsed_ms", 0.0) for r in records) / total_queries, 2)
     avg_score = round(sum(r.get("top_score", 0.0) for r in records) / total_queries, 4)
     zero_hits = sum(1 for r in records if r.get("hit_count", 0) == 0)
     engine_counts = dict(Counter(r.get("engine", "tfidf") for r in records))
-    query_counts = Counter(r.get("query", "") for r in records).most_common(5)
+    query_counts = Counter(r.get("query", "") for r in records).most_common(8)
+    recent_latencies = [
+        {
+            "id": r.get("id"),
+            "query": r.get("query", "")[:18],
+            "engine": r.get("engine", "tfidf"),
+            "elapsed_ms": r.get("elapsed_ms", 0.0),
+            "top_score": r.get("top_score", 0.0)
+        }
+        for r in records[:12]
+    ][::-1]
 
     return {
         "total_queries": total_queries,
@@ -31,5 +56,7 @@ def get_system_stats():
         "avg_top_score": avg_score,
         "zero_hit_rate": round(zero_hits / total_queries, 4),
         "engine_distribution": engine_counts,
-        "top_queries": [{"query": q, "count": c} for q, c in query_counts]
+        "top_queries": [{"query": q, "count": c} for q, c in query_counts],
+        "recent_latencies": recent_latencies,
+        "corpus": corpus_summary
     }

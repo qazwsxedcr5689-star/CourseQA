@@ -2,77 +2,1013 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>CourseQA - 智能课程知识检索系统</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CourseQA — 智能课程问答与多引擎信息检索系统</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 30px auto; padding: 0 20px; background: #f8fafc; color: #1e293b; }
-    .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; }
-    .controls { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-    input[type="text"] { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; }
-    select, button { padding: 10px 16px; border-radius: 6px; border: 1px solid #cbd5e1; cursor: pointer; }
-    button.primary { background: #2563eb; color: white; border: none; }
-    .badge { display: inline-block; padding: 2px 8px; font-size: 12px; border-radius: 4px; background: #e2e8f0; margin-right: 8px; }
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-soft: #eef2ff;
+      --accent: #0ea5e9;
+      --emerald: #10b981;
+      --emerald-soft: #ecfdf5;
+      --amber: #f59e0b;
+      --amber-soft: #fffbeb;
+      --rose: #ef4444;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.07);
+      --radius: 14px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0b1120;
+      --surface: #1e293b;
+      --surface-alt: #0f172a;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #818cf8;
+      --primary-soft: rgba(99, 102, 241, 0.16);
+      --emerald-soft: rgba(16, 185, 129, 0.15);
+      --amber-soft: rgba(245, 158, 11, 0.15);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      transition: background 0.25s, color 0.25s;
+    }
+
+    /* Top Header Banner */
+    .hero-header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 45%, #0f172a 100%);
+      color: #fff;
+      padding: 28px 24px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .container { max-width: 1240px; margin: 0 auto; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-logo {
+      width: 46px; height: 46px; border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #06b6d4);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 20px; color: #fff;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+    }
+    .brand h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.3px; }
+    .brand p { font-size: 13px; color: #cbd5e1; margin-top: 2px; }
+
+    .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-ghost:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-1px); }
+
+    .status-strip {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 12.5px;
+      color: #cbd5e1;
+    }
+    .status-pill {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 4px 12px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; display: inline-block; }
+
+    /* Navigation Tabs */
+    .tabs-bar {
+      display: flex;
+      gap: 8px;
+      margin: 20px auto 18px;
+      background: var(--surface);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 160px;
+      padding: 10px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .tab-btn:hover { color: var(--primary); background: var(--primary-soft); }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(79, 70, 229, 0.28);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Cards & Controls */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .search-input-wrap {
+      flex: 1;
+      min-width: 260px;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      background: var(--surface-alt);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+    select, .btn {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      font-weight: 600;
+      padding: 12px 22px;
+    }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* Sample Query Chips */
+    .chips-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .chips-label { font-size: 12.5px; color: var(--text-muted); font-weight: 600; }
+    .chip {
+      font-size: 12.5px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    /* AI Synthesized Answer Card */
+    .qa-answer-card {
+      background: linear-gradient(135deg, var(--primary-soft) 0%, var(--surface) 100%);
+      border: 1.5px solid rgba(99, 102, 241, 0.35);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-md);
+    }
+    .qa-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .qa-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--primary);
+    }
+    .conf-badge {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .conf-high { background: var(--emerald-soft); color: var(--emerald); }
+    .conf-medium { background: var(--amber-soft); color: var(--amber); }
+    .conf-low { background: rgba(239, 68, 68, 0.12); color: var(--rose); }
+
+    .qa-summary {
+      font-size: 14.5px;
+      color: var(--text);
+      line-height: 1.75;
+      margin-bottom: 14px;
+      white-space: pre-line;
+    }
+    .qa-keypoints {
+      list-style: none;
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .qa-keypoints li {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .cite-num {
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Retrieved Chunk Card */
+    .chunk-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    }
+    .chunk-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary);
+    }
+    .chunk-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      margin-right: 6px;
+    }
+    .badge-rank { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .badge-source { background: var(--primary-soft); color: var(--primary); border-color: transparent; }
+    .score-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .score-bar {
+      width: 90px;
+      height: 7px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 999px;
+    }
+    .chunk-content {
+      font-size: 14.5px;
+      line-height: 1.75;
+      color: var(--text);
+      margin: 10px 0;
+      white-space: pre-line;
+    }
+    mark {
+      background: rgba(245, 158, 11, 0.25);
+      color: inherit;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .matched-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .term-tag {
+      background: var(--emerald-soft);
+      color: var(--emerald);
+      padding: 1px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    /* Multi-Engine Arena Grid */
+    .arena-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 1100px) { .arena-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) { .arena-grid { grid-template-columns: 1fr; } }
+
+    .arena-col {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .arena-col-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .arena-col-header h4 { font-size: 15px; color: var(--primary); }
+    .arena-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+    .arena-metric-box {
+      background: var(--surface-alt);
+      padding: 6px 8px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .arena-item {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 12.5px;
+    }
+
+    /* Corpus Studio Layout */
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 860px) { .studio-grid { grid-template-columns: 1fr; } }
+    .doc-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .doc-item:hover, .doc-item.active {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+    textarea.editor {
+      width: 100%;
+      min-height: 360px;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 13.5px;
+      line-height: 1.6;
+      resize: vertical;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: var(--shadow-md);
+      font-size: 13.5px;
+      z-index: 999;
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <div class="nav">
-    <h2>CourseQA 多引擎课程知识检索系统</h2>
-    <div>
-      <button onclick="reloadCorpus()">热重载知识库</button>
-      <a href="/dashboard" style="margin-left:12px;">数据统计与历史看板</a>
+  <header class="hero-header">
+    <div class="container">
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-logo">QA</div>
+          <div>
+            <h1>CourseQA 智能课程问答与多引擎信息检索系统</h1>
+            <p>Multi-Engine Academic Retrieval · Hybrid RRF · Okapi BM25 · TF-IDF · 结构化语义分块与知识溯源</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn-ghost" onclick="reloadCorpus()">🔄 热重载知识库</button>
+          <a class="btn-ghost" href="/dashboard">📊 检索统计与历史看板</a>
+          <a class="btn-ghost" href="/docs" target="_blank">⚡ Swagger API</a>
+          <button class="btn-ghost" onclick="toggleTheme()" id="themeBtn">🌙 暗色模式</button>
+        </div>
+      </div>
+      <div class="status-strip" id="corpusStatusStrip">
+        <span class="status-pill"><span class="status-dot"></span> 引擎状态: 在线就绪</span>
+        <span class="status-pill" id="statFiles">📚 课程文档: 加载中...</span>
+        <span class="status-pill" id="statChunks">🧩 语义分块: 加载中...</span>
+        <span class="status-pill" id="statVocab">🔤 索引词表: 加载中...</span>
+        <span class="status-pill" id="statReload">⏱️ 最近重载: --</span>
+      </div>
     </div>
-  </div>
-  <div class="card">
-    <div class="controls">
-      <input id="queryInput" type="text" placeholder="输入课程问题，例如：Dijkstra最短路径算法的时间复杂度是多少？" />
-      <select id="engineSelect">
-        <option value="tfidf">TF-IDF + 余弦相似度</option>
-        <option value="bm25">BM25 概率检索模型</option>
-        <option value="count">CountVectorizer 词频向量</option>
-      </select>
-      <select id="topKSelect">
-        <option value="3">Top 3</option>
-        <option value="5" selected>Top 5</option>
-        <option value="10">Top 10</option>
-      </select>
-      <button class="primary" onclick="runSearch()">立即检索</button>
+  </header>
+
+  <main class="container" style="padding: 0 20px 48px;">
+    <!-- Navigation Tabs -->
+    <div class="tabs-bar">
+      <button class="tab-btn active" onclick="switchTab('qa', this)">🔍 智能问答与检索</button>
+      <button class="tab-btn" onclick="switchTab('arena', this)">⚔️ 多引擎对比竞技场</button>
+      <button class="tab-btn" onclick="switchTab('corpus', this)">📚 知识库管理与分块预览</button>
+      <button class="tab-btn" onclick="switchTab('batch', this)">🧪 批量并发评测</button>
     </div>
-  </div>
-  <div id="metaInfo" style="margin-bottom: 12px; font-size: 14px; color: #64748b;"></div>
-  <div id="resultContainer"></div>
+
+    <!-- TAB 1: Smart QA & Search -->
+    <section id="tab-qa" class="tab-panel active">
+      <div class="card">
+        <div class="search-box">
+          <div class="search-input-wrap">
+            <input id="queryInput" class="search-input" type="text"
+              placeholder="输入课程问题或知识点，例如：Dijkstra最短路径算法的时间复杂度与适用条件是什么？"
+              onkeydown="if(event.key==='Enter') runSearch()" />
+          </div>
+          <select id="engineSelect" title="选择检索引擎">
+            <option value="hybrid" selected>🚀 Hybrid (RRF 多路混合检索)</option>
+            <option value="bm25">🎯 BM25 概率检索模型</option>
+            <option value="tfidf">📐 TF-IDF + 余弦相似度</option>
+            <option value="count">🔢 CountVectorizer 词频向量</option>
+          </select>
+          <select id="topKSelect" title="返回分块数量">
+            <option value="3">Top 3</option>
+            <option value="5" selected>Top 5</option>
+            <option value="8">Top 8</option>
+            <option value="10">Top 10</option>
+          </select>
+          <button class="btn btn-primary" onclick="runSearch()">立即检索问答</button>
+          <button class="btn btn-secondary" onclick="jumpToArena()">多引擎同题对比</button>
+        </div>
+
+        <div class="chips-row">
+          <span class="chips-label">💡 精选课程问题：</span>
+          <span class="chip" onclick="quickAsk('Dijkstra最短路径算法的时间复杂度是多少？存在负权边怎么办？')">Dijkstra最短路径与负权边</span>
+          <span class="chip" onclick="quickAsk('为什么海量数据Top-K推荐使用最小堆而不是全局排序？')">最小堆 Top-K 非完全排序</span>
+          <span class="chip" onclick="quickAsk('BM25检索模型相比传统TF-IDF做了哪些核心改进？参数k1和b的作用是什么？')">BM25 vs TF-IDF 原理</span>
+          <span class="chip" onclick="quickAsk('哈夫曼树如何实现无损压缩编码？为什么满足前缀码性质？')">哈夫曼无损压缩编码</span>
+          <span class="chip" onclick="quickAsk('什么是RRF倒数排名融合与多引擎混合检索？')">RRF 倒数排名融合</span>
+          <span class="chip" onclick="quickAsk('为什么MySQL和SQLite索引普遍采用B+树而不是B树或红黑树？')">数据库 B+ 树索引原理</span>
+          <span class="chip" onclick="quickAsk('数据库事务ACID四大特性与MVCC多版本并发控制原理是什么？')">事务 ACID 与 MVCC</span>
+          <span class="chip" onclick="quickAsk('操作系统死锁的四个必要条件与银行家算法避免策略')">死锁条件与银行家算法</span>
+        </div>
+      </div>
+
+      <div id="metaInfo" style="margin-bottom: 14px; font-size: 13.5px; color: var(--text-muted);"></div>
+      <div id="qaAnswerBox"></div>
+      <div id="resultContainer"></div>
+    </section>
+
+    <!-- TAB 2: Multi-Engine Arena -->
+    <section id="tab-arena" class="tab-panel">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+          <div>
+            <h3 style="font-size:17px;">⚔️ 四大检索引擎同题横向评测竞技场</h3>
+            <p style="font-size:13px; color:var(--text-muted);">在同一课程问题下并行运行 Hybrid(RRF)、BM25、TF-IDF 与 CountVectorizer，直观对比响应耗时、Top-1 得分与召回排序差异</p>
+          </div>
+          <div style="display:flex; gap:10px; flex:1; max-width:540px;">
+            <input id="arenaQueryInput" class="search-input" type="text" placeholder="输入要横向对比的问题..." onkeydown="if(event.key==='Enter') runArenaCompare()" />
+            <button class="btn btn-primary" onclick="runArenaCompare()">开始同台竞技</button>
+          </div>
+        </div>
+      </div>
+      <div id="arenaContainer"></div>
+    </section>
+
+    <!-- TAB 3: Corpus Studio -->
+    <section id="tab-corpus" class="tab-panel">
+      <div class="studio-grid">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:16px;">📂 课程 Markdown 知识库</h3>
+            <button class="btn btn-primary" style="padding:6px 12px; font-size:12.5px;" onclick="createNewDocPrompt()">+ 新建讲义</button>
+          </div>
+          <div id="docListContainer"></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+            <div>
+              <h3 id="activeDocTitle" style="font-size:16px;">选择左侧文档查看语义分块或在线编辑</h3>
+              <p id="activeDocSub" style="font-size:12.5px; color:var(--text-muted);"></p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-secondary" style="padding:7px 14px; font-size:13px;" onclick="toggleDocMode('chunks')">🧩 语义分块视图</button>
+              <button class="btn btn-secondary" style="padding:7px 14px; font-size:13px;" onclick="toggleDocMode('editor')">✏️ Markdown 编辑</button>
+              <button class="btn btn-primary" style="padding:7px 14px; font-size:13px;" onclick="saveActiveDocument()">💾 保存并热重载</button>
+            </div>
+          </div>
+
+          <div id="docChunksView"></div>
+          <div id="docEditorView" style="display:none;">
+            <div style="margin-bottom:10px; display:flex; gap:10px; align-items:center;">
+              <span style="font-size:13px; color:var(--text-muted);">文件名:</span>
+              <input id="editorFilename" class="search-input" style="max-width:300px; padding:8px 12px;" />
+            </div>
+            <textarea id="editorTextarea" class="editor" placeholder="# 课程标题&#10;&#10;## 章节标题&#10;在此输入课程核心讲义内容..."></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Batch Evaluation -->
+    <section id="tab-batch" class="tab-panel">
+      <div class="card">
+        <h3 style="font-size:17px; margin-bottom:6px;">🧪 批量问题并发评测工作台</h3>
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">每行输入一个测试问题，一键验证检索引擎在多学科测试集上的命中率、平均延迟与 Top-1 召回章节</p>
+        <textarea id="batchTextarea" class="editor" style="min-height:170px;">Dijkstra最短路径算法的时间复杂度与适用条件是什么？
+为什么海量数据Top-K推荐使用最小堆而不是全局排序？
+BM25检索模型相比传统TF-IDF做了哪些核心改进？
+哈夫曼树如何实现无损压缩编码？
+为什么数据库索引普遍采用B+树而不是红黑树？
+面向对象设计SOLID五大原则分别是什么？</textarea>
+        <div style="display:flex; gap:12px; align-items:center; margin-top:12px;">
+          <select id="batchEngineSelect">
+            <option value="hybrid" selected>Hybrid (RRF 混合检索)</option>
+            <option value="bm25">BM25 概率检索模型</option>
+            <option value="tfidf">TF-IDF + 余弦相似度</option>
+            <option value="count">CountVectorizer 词频向量</option>
+          </select>
+          <button class="btn btn-primary" onclick="runBatchEval()">🚀 执行批量评测</button>
+          <span id="batchSummaryText" style="font-size:13.5px; color:var(--text-secondary); font-weight:600;"></span>
+        </div>
+      </div>
+      <div id="batchResultBox"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
 
   <script>
+    let currentDocName = '';
+    let currentDocMode = 'chunks';
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => { t.style.display = 'none'; }, 2800);
+    }
+
+    function toggleTheme() {
+      const root = document.documentElement;
+      const isDark = root.getAttribute('data-theme') === 'dark';
+      root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      document.getElementById('themeBtn').textContent = isDark ? '🌙 暗色模式' : '☀️ 亮色模式';
+      localStorage.setItem('courseqa_theme', isDark ? 'light' : 'dark');
+    }
+
+    (function initTheme() {
+      if (localStorage.getItem('courseqa_theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.getElementById('themeBtn').textContent = '☀️ 亮色模式';
+      }
+    })();
+
+    function switchTab(tabId, btnEl) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      if (btnEl) btnEl.classList.add('active');
+      if (tabId === 'corpus') loadCorpusStudio();
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+
+    function highlightTerms(text, terms) {
+      let safe = escapeHtml(text);
+      if (!terms || !terms.length) return safe;
+      const sorted = [...terms].sort((a, b) => b.length - a.length);
+      sorted.forEach(term => {
+        if (!term || term.length < 2) return;
+        const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escaped})`, 'gi');
+        safe = safe.replace(regex, '<mark>$1</mark>');
+      });
+      return safe;
+    }
+
+    async function refreshStatusStrip() {
+      try {
+        const res = await fetch('/api/corpus');
+        const data = await res.json();
+        document.getElementById('statFiles').textContent = `📚 课程文档: ${data.total_files} 篇`;
+        document.getElementById('statChunks').textContent = `🧩 语义分块: ${data.total_chunks} 块`;
+        document.getElementById('statVocab').textContent = `🔤 索引词表: ${data.vocab_size} 词项`;
+        document.getElementById('statReload').textContent = `⏱️ 最近重载: ${data.reloaded_at || '刚刚'}`;
+      } catch (e) {}
+    }
+
+    function quickAsk(q) {
+      document.getElementById('queryInput').value = q;
+      runSearch();
+    }
+
     async function runSearch() {
       const query = document.getElementById('queryInput').value.trim();
       const engine = document.getElementById('engineSelect').value;
       const top_k = parseInt(document.getElementById('topKSelect').value);
-      if (!query) return;
+      if (!query) {
+        showToast('请输入要检索的课程问题');
+        return;
+      }
+
       const res = await fetch('/api/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query, engine, top_k })
       });
       const data = await res.json();
-      document.getElementById('metaInfo').innerText =
-        `检索耗时: ${data.elapsed_ms} ms | 知识库总分块: ${data.total_chunks} | 命中结果: ${data.results.length}`;
-      const container = document.getElementById('resultContainer');
-      container.innerHTML = data.results.map(item => `
-        <div class="card">
-          <div>
-            <span class="badge">Rank #${item.rank}</span>
-            <span class="badge">Score: ${item.score}</span>
-            <span class="badge">来源: ${item.source} - ${item.section}</span>
+
+      const engineNames = {
+        hybrid: 'Hybrid (RRF 多路混合检索)',
+        bm25: 'Okapi BM25 概率检索',
+        tfidf: 'TF-IDF 向量空间模型',
+        count: 'CountVectorizer 词频模型'
+      };
+      document.getElementById('metaInfo').innerHTML =
+        `⚡ 检索引擎: <strong>${engineNames[engine] || engine}</strong> &nbsp;|&nbsp; ` +
+        `⏱️ 检索耗时: <strong>${data.elapsed_ms} ms</strong> &nbsp;|&nbsp; ` +
+        `🧩 知识库总分块: <strong>${data.total_chunks}</strong> &nbsp;|&nbsp; ` +
+        `🎯 命中分块: <strong>${data.results.length}</strong>`;
+
+      // Render Extractive QA Answer Card
+      const qa = data.qa_answer;
+      const qaBox = document.getElementById('qaAnswerBox');
+      if (qa) {
+        const confClass = qa.confidence === 'high' ? 'conf-high' : (qa.confidence === 'medium' ? 'conf-medium' : 'conf-low');
+        const confLabel = qa.confidence === 'high' ? '高置信度匹配' : (qa.confidence === 'medium' ? '中等置信度' : '低置信度');
+        qaBox.innerHTML = `
+          <div class="qa-answer-card">
+            <div class="qa-header">
+              <div class="qa-title">
+                <span>🤖 AI 课程知识抽取式综合解答</span>
+                <span class="conf-badge ${confClass}">${confLabel} (${qa.confidence_score}%)</span>
+              </div>
+              <button class="btn btn-secondary" style="padding:5px 12px; font-size:12px;" onclick="copyAnswer()">📋 复制解答</button>
+            </div>
+            <div class="qa-summary" id="qaSummaryText">${escapeHtml(qa.summary)}</div>
+            ${qa.key_points && qa.key_points.length ? `
+              <ul class="qa-keypoints">
+                ${qa.key_points.map(kp => `
+                  <li>
+                    <span class="cite-num">[${kp.citation_index}]</span>
+                    <div>
+                      <strong>${escapeHtml(kp.section)}</strong>（<code>${escapeHtml(kp.source)}</code>）：
+                      ${escapeHtml(kp.text)}
+                    </div>
+                  </li>
+                `).join('')}
+              </ul>
+            ` : ''}
+            ${qa.related_questions && qa.related_questions.length ? `
+              <div class="chips-row" style="margin-top:8px;">
+                <span class="chips-label">🔗 关联追问：</span>
+                ${qa.related_questions.map(rq => `<span class="chip" onclick="quickAsk('${escapeHtml(rq)}')">${escapeHtml(rq)}</span>`).join('')}
+              </div>
+            ` : ''}
           </div>
-          <p style="margin-top:10px; line-height:1.6;">${item.content}</p>
+        `;
+      } else {
+        qaBox.innerHTML = '';
+      }
+
+      // Render Retrieved Chunks
+      const maxScore = data.results.length ? Math.max(...data.results.map(r => r.score), 0.001) : 1;
+      const container = document.getElementById('resultContainer');
+      container.innerHTML = data.results.map(item => {
+        const pct = Math.min(100, Math.round((item.score / maxScore) * 100));
+        return `
+          <div class="chunk-card">
+            <div class="chunk-top">
+              <div>
+                <span class="badge badge-rank">Rank #${item.rank}</span>
+                <span class="badge badge-source">📄 ${escapeHtml(item.doc_title || item.source)} · ${escapeHtml(item.section)}</span>
+                <span class="badge">${item.char_count || item.content.length} 字符</span>
+              </div>
+              <div class="score-bar-wrap">
+                <span>相关度得分: ${item.score}</span>
+                <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%"></div></div>
+              </div>
+            </div>
+            <div class="chunk-content">${highlightTerms(item.content, item.matched_terms)}</div>
+            ${item.matched_terms && item.matched_terms.length ? `
+              <div class="matched-row">
+                <span>命中核心词项:</span>
+                ${item.matched_terms.map(t => `<span class="term-tag">${escapeHtml(t)}</span>`).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('') || '<div class="card">未检索到相关课程知识片段，请尝试切换检索引擎或更换关键词。</div>';
+    }
+
+    function copyAnswer() {
+      const el = document.getElementById('qaSummaryText');
+      if (!el) return;
+      navigator.clipboard.writeText(el.innerText);
+      showToast('已复制综合解答内容到剪贴板');
+    }
+
+    function jumpToArena() {
+      const q = document.getElementById('queryInput').value.trim() || 'Dijkstra最短路径算法的时间复杂度与适用条件是什么？';
+      document.getElementById('arenaQueryInput').value = q;
+      switchTab('arena', document.querySelectorAll('.tab-btn')[1]);
+      runArenaCompare();
+    }
+
+    async function runArenaCompare() {
+      const query = document.getElementById('arenaQueryInput').value.trim() || 'Dijkstra最短路径算法的时间复杂度与适用条件是什么？';
+      document.getElementById('arenaQueryInput').value = query;
+      const res = await fetch('/api/compare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, top_k: 4 })
+      });
+      const data = await res.json();
+      const box = document.getElementById('arenaContainer');
+      box.innerHTML = `
+        <div class="arena-grid">
+          ${data.engines.map(eng => `
+            <div class="arena-col">
+              <div class="arena-col-header">
+                <h4>${escapeHtml(eng.label)}</h4>
+                <div class="arena-metrics">
+                  <div class="arena-metric-box"><div>耗时</div><strong>${eng.elapsed_ms}ms</strong></div>
+                  <div class="arena-metric-box"><div>Top1分</div><strong>${eng.top_score}</strong></div>
+                  <div class="arena-metric-box"><div>重合率</div><strong>${eng.overlap_with_hybrid_pct}%</strong></div>
+                </div>
+              </div>
+              ${eng.results.map(r => `
+                <div class="arena-item">
+                  <div style="display:flex; justify-content:space-between; font-weight:600; margin-bottom:4px;">
+                    <span>#${r.rank} ${escapeHtml(r.section)}</span>
+                    <span style="color:var(--primary);">${r.score}</span>
+                  </div>
+                  <div style="color:var(--text-secondary); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">
+                    ${highlightTerms(r.content, r.matched_terms)}
+                  </div>
+                </div>
+              `).join('') || '<div class="arena-item">无命中结果</div>'}
+            </div>
+          `).join('')}
         </div>
-      `).join('') || '<div class="card">未检索到相关课程知识片段。</div>';
+      `;
+    }
+
+    async function loadCorpusStudio(selectedFile) {
+      const res = await fetch('/api/corpus');
+      const data = await res.json();
+      const listEl = document.getElementById('docListContainer');
+      if (!selectedFile && data.documents.length) {
+        selectedFile = currentDocName || data.documents[0].filename;
+      }
+      listEl.innerHTML = data.documents.map(doc => `
+        <div class="doc-item ${doc.filename === selectedFile ? 'active' : ''}" onclick="selectDocument('${escapeHtml(doc.filename)}')">
+          <div style="font-weight:600; font-size:14px;">📄 ${escapeHtml(doc.doc_title)}</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+            <code>${escapeHtml(doc.filename)}</code> · ${doc.chunk_count} 个分块 · ${(doc.size_bytes/1024).toFixed(1)} KB
+          </div>
+        </div>
+      `).join('');
+      if (selectedFile) {
+        await selectDocument(selectedFile);
+      }
+    }
+
+    async function selectDocument(filename) {
+      currentDocName = filename;
+      const res = await fetch('/api/corpus/' + encodeURIComponent(filename));
+      if (!res.ok) return;
+      const detail = await res.json();
+      document.getElementById('activeDocTitle').textContent = `📄 ${filename}`;
+      document.getElementById('activeDocSub').textContent = `共切分为 ${detail.chunk_count} 个结构化语义知识块`;
+      document.getElementById('editorFilename').value = detail.filename;
+      document.getElementById('editorTextarea').value = detail.content;
+
+      document.getElementById('docChunksView').innerHTML = detail.chunks.map((c, idx) => `
+        <div class="chunk-card" style="padding:14px 16px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <span class="badge badge-source">Chunk #${idx + 1} · ${escapeHtml(c.section)}</span>
+            <span class="badge">${c.char_count} 字符</span>
+          </div>
+          <div style="font-size:13.5px; color:var(--text-secondary); white-space:pre-line;">${escapeHtml(c.content)}</div>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.doc-item').forEach(el => {
+        el.classList.toggle('active', el.innerText.includes(filename));
+      });
+    }
+
+    function toggleDocMode(mode) {
+      currentDocMode = mode;
+      document.getElementById('docChunksView').style.display = mode === 'chunks' ? 'block' : 'none';
+      document.getElementById('docEditorView').style.display = mode === 'editor' ? 'block' : 'none';
+    }
+
+    function createNewDocPrompt() {
+      toggleDocMode('editor');
+      document.getElementById('activeDocTitle').textContent = '✨ 新建课程 Markdown 讲义';
+      document.getElementById('activeDocSub').textContent = '保存后将自动执行语义分块并热重载检索索引';
+      document.getElementById('editorFilename').value = '05_computer_networks.md';
+      document.getElementById('editorTextarea').value = `# 计算机网络核心讲义\n\n## TCP 三次握手与四次挥手\nTCP 协议通过三次握手建立可靠连接，防止已失效的连接请求报文段突然又传送到了服务端而产生错误。四次挥手用于优雅关闭全双工连接，主动关闭方在进入 TIME_WAIT 状态后需等待 2MSL 以确保最后一个 ACK 能够到达对端。\n\n## 拥塞控制算法 (慢启动 / 拥塞避免 / 快重传 / 快恢复)\nTCP 拥塞控制通过维护拥塞窗口 cwnd 与慢启动阈值 ssthresh，动态探测网络承载能力，避免网络进入拥塞崩溃状态。\n`;
+    }
+
+    async function saveActiveDocument() {
+      const filename = document.getElementById('editorFilename').value.trim();
+      const content = document.getElementById('editorTextarea').value.trim();
+      if (!filename || !content) {
+        showToast('文件名与文档内容不能为空');
+        return;
+      }
+      const res = await fetch('/api/corpus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename, content })
+      });
+      const data = await res.json();
+      showToast(`${data.message}：当前共 ${data.files} 篇文档，${data.chunks} 个分块`);
+      await refreshStatusStrip();
+      toggleDocMode('chunks');
+      await loadCorpusStudio(data.filename);
+    }
+
+    async function runBatchEval() {
+      const raw = document.getElementById('batchTextarea').value;
+      const queries = raw.split('\n').map(s => s.trim()).filter(Boolean);
+      const engine = document.getElementById('batchEngineSelect').value;
+      if (!queries.length) return;
+      const res = await fetch('/api/batch_search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ queries, engine, top_k: 3 })
+      });
+      const data = await res.json();
+      document.getElementById('batchSummaryText').textContent =
+        `✅ 评测完成：共 ${data.count} 题 | 命中率 ${(data.hit_rate * 100).toFixed(1)}% | 总耗时 ${data.elapsed_ms} ms`;
+
+      document.getElementById('batchResultBox').innerHTML = `
+        <div class="card" style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border); text-align:left;">
+                <th style="padding:10px;">#</th>
+                <th style="padding:10px;">评测问题</th>
+                <th style="padding:10px;">Top-1 命中章节</th>
+                <th style="padding:10px;">Top-1 得分</th>
+                <th style="padding:10px;">召回块数</th>
+                <th style="padding:10px;">耗时(ms)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.items.map((it, i) => `
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:10px; font-weight:600;">${i + 1}</td>
+                  <td style="padding:10px;">${escapeHtml(it.query)}</td>
+                  <td style="padding:10px;"><span class="badge badge-source">${escapeHtml(it.top_section)}</span></td>
+                  <td style="padding:10px; font-weight:600; color:var(--primary);">${it.top_score}</td>
+                  <td style="padding:10px;">${it.hit_count}</td>
+                  <td style="padding:10px;">${it.elapsed_ms} ms</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
     }
 
     async function reloadCorpus() {
       const res = await fetch('/api/reload', { method: 'POST' });
       const data = await res.json();
-      alert(`${data.message}：共加载 ${data.files} 个文档，${data.chunks} 个知识块`);
+      showToast(`${data.message}：共加载 ${data.files} 篇文档，${data.chunks} 个知识块`);
+      await refreshStatusStrip();
     }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await refreshStatusStrip();
+      const params = new URLSearchParams(window.location.search);
+      const initQ = params.get('q') || 'Dijkstra最短路径算法的时间复杂度是多少？存在负权边怎么办？';
+      if (params.get('engine')) {
+        document.getElementById('engineSelect').value = params.get('engine');
+      }
+      document.getElementById('queryInput').value = initQ;
+      runSearch();
+    });
   </script>
 </body>
 </html>
